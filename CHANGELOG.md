@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.37.0]
+
+- [`27e4d01e`](https://github.com/tauri-apps/tao/commit/27e4d01e7ae416f09f7434d3287368c252985d52) ([#1298](https://github.com/tauri-apps/tao/pull/1298) by [@nifouprog](https://github.com/tauri-apps/tao/../../nifouprog)) Fix a mismatched meta-variable name in the `android_binding` macro.
+- [`95636d5f`](https://github.com/tauri-apps/tao/commit/95636d5fd5fa6250f77ad029848db56ca22acfac) ([#1301](https://github.com/tauri-apps/tao/pull/1301) by [@velocitysystems](https://github.com/tauri-apps/tao/../../velocitysystems)) On iOS, fixed a startup panic in debug builds on iOS versions older than 26, caused by registering the iOS 26-only `preferredWindowingControlStyleForScene:` method inside the `UIWindowSceneDelegate` protocol block.
+- [`eebd58f9`](https://github.com/tauri-apps/tao/commit/eebd58f99ad64b849bdafed656c81968c6a9f01d) ([#1261](https://github.com/tauri-apps/tao/pull/1261) by [@polw1](https://github.com/tauri-apps/tao/../../polw1)) On iOS, emit `WindowEvent::Destroyed` for a scene's windows when the scene disconnects. Previously `sceneDidDisconnect:` was a no-op, so windows tied to a scene never reported their destruction when the system reclaimed the scene.
+- [`f6671e34`](https://github.com/tauri-apps/tao/commit/f6671e34f97ba0caef571890623ecb0192735bee) ([#1291](https://github.com/tauri-apps/tao/pull/1291) by [@Legend-Master](https://github.com/tauri-apps/tao/../../Legend-Master)) Bumped MSRV to 1.85
+- [`f8722bd3`](https://github.com/tauri-apps/tao/commit/f8722bd3628f52ff637e043a95de2e53f78cbcd3) ([#1292](https://github.com/tauri-apps/tao/pull/1292) by [@Legend-Master](https://github.com/tauri-apps/tao/../../Legend-Master)) Updated `windows` and `windows-core` to 0.62, this drop Windows 7 support, see https://github.com/microsoft/windows-rs/issues/3808
+- [`bd1b990b`](https://github.com/tauri-apps/tao/commit/bd1b990b05ed6ef9fd4c42999f3b4fe23eb0f1ee) ([#1296](https://github.com/tauri-apps/tao/pull/1296) by [@Legend-Master](https://github.com/tauri-apps/tao/../../Legend-Master)) On Windows, fixed flashing title bar on undecorated windows creation
+- [`36b31b79`](https://github.com/tauri-apps/tao/commit/36b31b795f71ea52528b0d65de86c54645f3634d) ([#1157](https://github.com/tauri-apps/tao/pull/1157) by [@Legend-Master](https://github.com/tauri-apps/tao/../../Legend-Master)) Exits the process on receiving `WM_ENDSESSION` message, this fixes the `cannot move state from Destroyed` crash after receiving the message from Restart Manager
+
 ## \[0.36.0]
 
 - [`2b818c4e`](https://github.com/tauri-apps/tao/commit/2b818c4e84288c42365f8c790f4e7a519f6376ec) ([#1288](https://github.com/tauri-apps/tao/pull/1288) by [@Legend-Master](https://github.com/tauri-apps/tao/../../Legend-Master)) **Breaking Change:**
