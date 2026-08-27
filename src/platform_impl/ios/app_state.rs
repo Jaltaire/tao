@@ -14,7 +14,10 @@ use std::{
 };
 
 use objc2::{rc::Retained, runtime::AnyObject, MainThreadMarker, Message};
-use objc2_ui_kit::{UIApplication, UIScene, UISceneConnectionOptions, UIWindowScene};
+use objc2_foundation::NSSet;
+use objc2_ui_kit::{
+  UIApplication, UIOpenURLContext, UIScene, UISceneConnectionOptions, UIWindowScene,
+};
 
 use crate::{
   dpi::LogicalSize,
@@ -514,10 +517,18 @@ pub unsafe fn connect_scene(scene: &UIScene, options: &UISceneConnectionOptions)
   // once, with the options that connect the scene. Reading it anywhere
   // else means losing every link that arrives while the application is
   // not already running.
-  let urls = super::scene::urls_from_contexts(
-    &options.URLContexts(),
-    "scene:willConnectToSession:options:",
-  );
+  // Asked for by message rather than through the generated binding, which
+  // takes the platform at its word that a set is always returned. It is
+  // not: an application launched for its own sake rather than to open
+  // anything is handed nothing here, and reading that as a set aborts the
+  // launch.
+  let contexts: Option<Retained<NSSet<UIOpenURLContext>>> =
+    unsafe { msg_send![options, URLContexts] };
+  let urls = contexts
+    .map(|contexts| {
+      super::scene::urls_from_contexts(&contexts, "scene:willConnectToSession:options:")
+    })
+    .unwrap_or_default();
   if !urls.is_empty() {
     handle_nonuser_event(EventWrapper::StaticEvent(Event::Opened { urls }));
   }
