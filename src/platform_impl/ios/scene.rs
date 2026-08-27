@@ -108,23 +108,9 @@ define_class!(
 
     #[unsafe(method(scene:openURLContexts:))]
     fn scene_openURLContexts(&self, _scene: &UIScene, url_contexts: &NSSet<UIOpenURLContext>) {
-      unsafe {
-        let urls: Vec<url::Url> = url_contexts
-          .iter()
-          .filter_map(|ctx| {
-            ctx.URL().absoluteString().and_then(|url| {
-              let url = url.to_string();
-              url
-                .parse()
-                .map_err(|e| {
-                  log::error!("failed to parse URL {url} from scene:openURLContexts: {e}");
-                  e
-                })
-                .ok()
-            })
-          })
-          .collect();
-        if !urls.is_empty() {
+      let urls = urls_from_contexts(url_contexts, "scene:openURLContexts:");
+      if !urls.is_empty() {
+        unsafe {
           app_state::handle_nonuser_event(EventWrapper::StaticEvent(Event::Opened { urls }));
         }
       }
@@ -183,3 +169,32 @@ define_class!(
     fn scene_didUpdateUserActivity(&self, _scene: &UIScene, _user_activity: &NSUserActivity) {}
   }
 );
+
+/// The URLs carried by a set of open contexts, in the order the platform
+/// hands them over.
+///
+/// The same set arrives by two different routes - at launch through the
+/// connection options, and afterwards through `scene:openURLContexts:` -
+/// and reading it is the same job either way. `whence` names the route for
+/// the log, so a URL that fails to parse can be traced back to where it
+/// came from.
+pub(crate) fn urls_from_contexts(
+  url_contexts: &NSSet<UIOpenURLContext>,
+  whence: &str,
+) -> Vec<url::Url> {
+  url_contexts
+    .iter()
+    .filter_map(|ctx| {
+      unsafe { ctx.URL().absoluteString() }.and_then(|url| {
+        let url = url.to_string();
+        url
+          .parse()
+          .map_err(|e| {
+            log::error!("failed to parse URL {url} from {whence}: {e}");
+            e
+          })
+          .ok()
+      })
+    })
+    .collect()
+}

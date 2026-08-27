@@ -509,6 +509,19 @@ pub unsafe fn connect_scene(scene: &UIScene, options: &UISceneConnectionOptions)
     on_app_ready();
   }
 
+  // An application that is launched in order to open a URL is never sent
+  // `scene:openURLContexts:` for it: the URL is handed over here instead,
+  // once, with the options that connect the scene. Reading it anywhere
+  // else means losing every link that arrives while the application is
+  // not already running.
+  let urls = super::scene::urls_from_contexts(
+    &options.URLContexts(),
+    "scene:willConnectToSession:options:",
+  );
+  if !urls.is_empty() {
+    handle_nonuser_event(EventWrapper::StaticEvent(Event::Opened { urls }));
+  }
+
   if let Some(window_scene) = scene.downcast_ref::<UIWindowScene>() {
     let window = {
       let mut this = AppState::get_mut();
