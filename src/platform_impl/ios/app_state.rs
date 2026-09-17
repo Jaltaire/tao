@@ -212,6 +212,10 @@ impl AppState {
     )
   }
 
+  fn has_terminated(&self) -> bool {
+    matches!(self.state(), &AppStateImpl::Terminated)
+  }
+
   fn will_launch_transition(&mut self, queued_event_handler: Box<dyn EventHandler>) {
     let (queued_windows, queued_events, queued_gpu_redraws) = match self.take_state() {
       AppStateImpl::NotLaunched {
@@ -723,6 +727,12 @@ pub unsafe fn handle_nonuser_event(event: EventWrapper) {
 // requires main thread
 pub unsafe fn handle_nonuser_events<I: IntoIterator<Item = EventWrapper>>(events: I) {
   let mut this = AppState::get_mut();
+  // Once `LoopDestroyed` has been delivered the event handler is gone, and the
+  // teardown it performs raises events of its own: dropping a window reports
+  // that the window lost focus. There is nobody left to deliver them to.
+  if this.has_terminated() {
+    return;
+  }
   let (mut event_handler, active_control_flow, processing_redraws) =
     match this.try_user_callback_transition() {
       UserCallbackTransitionResult::ReentrancyPrevented { queued_events } => {
